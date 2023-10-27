@@ -11,6 +11,8 @@ django-phonenumber-field = "*"
 phonenumbers = "*"
 django-cors-headers = "*"
 django-multiselectfield = "*"
+djangorestframework-simplejwt = "*"
+requests = "*"
 
 [dev-packages]
 

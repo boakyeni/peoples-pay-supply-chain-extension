@@ -71,17 +71,17 @@ class FasterUserSerializer(serializers.Serializer):
         return representation
 
 
-class CreateUserSerializer(UserCreateSerializer):
-    class Meta(UserCreateSerializer.Meta):
-        model = User
-        fields = [
-            "id",
-            "email",
-            "first_name",
-            "last_name",
-            "phone_number",
-            "password",
-        ]
+# class CreateUserSerializer(UserCreateSerializer):
+#     class Meta(UserCreateSerializer.Meta):
+#         model = User
+#         fields = [
+#             "id",
+#             "email",
+#             "first_name",
+#             "last_name",
+#             "phone_number",
+#             "password",
+#         ]
 
 
 class UpdateUserSerializer(UserCreateSerializer):

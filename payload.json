@@ -1,0 +1,38 @@
+{
+    "merchant_tradeName": "Test Merchant Trade Name 7",
+    "contactPersonDesignation": "Chief Finance Officer",
+    "contactPersonEmail": "0544227745",
+    "contactPersonPhone": "0544227765",
+    "contact_person": "Barima Kwasi Owusu Jnr",
+    "businessPhone": "0302111774",
+    "digitalAddress": "G42094-PP",
+    "email": "test_4@testmerchant.com",
+    "lineOfBusiness": "Sports Products",
+    "location": "Adenta High",
+    "registrationNumber": "511975452223",
+    "tier_choice": {
+        "name": "tier_2",
+        "title": "Tier 2",
+        "monthly_limit": "GH₵5,000 - GH₵15,000 per month"
+    },
+    {
+        "name": "Business Registration",
+        "data": ""
+    },
+    : {
+        "account_type": "bank",
+        "account_issuer_name": "GUARANTY TRUST BANK",
+        "account_issuer": "300322",
+        "account_name": "Test Merchant Trade Name",
+        "account_number": "2241012721590"
+    },
+    {
+        "products": [
+            {
+                "product_id": "9423b0ff-6c1d-4f07-ab04-cb83156afff7",
+                "quantity": 2
+            }
+        ],
+        "customerId": "5",
+        "merchantId": "10"
+    }
