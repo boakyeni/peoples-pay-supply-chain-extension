@@ -25,11 +25,6 @@ class User(AbstractUser):
     REQUIRED_FIELDS = [
         "first_name",
         "last_name",
-        "phone_number",
-        "is_vehicle_owner",
-        "is_institution",
-        "is_parking_attendant",
-        "is_manager",
     ]
 
     objects = CustomUserManager()
