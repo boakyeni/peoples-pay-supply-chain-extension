@@ -36,6 +36,8 @@ def create_order(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["PATCH"])
+# @authentication_classes([JWTStatelessUserAuthentication])
+# @permission_classes([IsAuthenticated])
 def update_order(request):
     """
     Can update the entire order object,
@@ -87,6 +89,8 @@ def update_order(request):
         return Response(serializer.data)
 
 @api_view(["DELETE"])
+# @authentication_classes([JWTStatelessUserAuthentication])
+# @permission_classes([IsAuthenticated])
 def delete_order(request):
     data = request.data
     try:

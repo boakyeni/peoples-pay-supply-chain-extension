@@ -13,6 +13,7 @@ django-cors-headers = "*"
 django-multiselectfield = "*"
 djangorestframework-simplejwt = "*"
 requests = "*"
+mysqlclient = "*"
 
 [dev-packages]
 
