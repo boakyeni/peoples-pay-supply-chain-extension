@@ -7,7 +7,6 @@ class Transaction(models.Model):
     transactions_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
-    peoples_pay_transaction_id = models.CharField(max_length=100)
     merchant_from = models.CharField(max_length=100)
     merchant_to = models.CharField(max_length=100)
     key = models.CharField(max_length=512)

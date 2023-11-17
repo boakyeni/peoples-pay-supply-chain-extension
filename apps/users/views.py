@@ -23,6 +23,8 @@ def login_view(request):
         token = RefreshToken()
         data = response.json()
         token["merchant_id"] = data['registrationNumber']
+        token['merchant_name'] = data["merchant_name"]
+        
         return Response({
             "refresh": str(token),
             "access": str(token.access_token),

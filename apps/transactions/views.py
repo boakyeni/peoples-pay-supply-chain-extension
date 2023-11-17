@@ -49,25 +49,35 @@ def get_transaction(request, pk):
 @api_view(["POST"])
 def create_transaction(request):
     if request.method == "POST":
-        serializer = TransactionSerializer(data=request.data)
+        data = request.data
+        data['merchant_from'] = request.auth['merchant_name']
+        serializer = TransactionSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
-
-            transaction_instance = Transaction.objects.get(transactions_id=serializer.data['transactions_id'])
+            transaction_instance = serializer.save()
+            # Get Peoples Pay token
+            
+            
             # Post Transaction to Peoples Pay
             transaction_response = requests.post('')
             transaction_response = transaction_response.json()
 
+            key = transaction_response['transactionId']
+            
+
             # Check status of transaction with transaction id from previous post
-            status_response = requests.post('https://peoplespay.com.gh/peoplepay/hub/transactions/get/"KEY"')
+            status_response = requests.post(f'https://peoplespay.com.gh/peoplepay/hub/transactions/get/{key}')
             status_response = status_response.json()
 
-            # Update the transaction instance with relevant data
+            status = status_response['status']
+            
 
+            # Update the transaction instance with relevant data
+            transaction_instance.key = key
+            transaction_instance.status = status
 
             #Save
 
-            
+            transaction_instance.save()
 
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)

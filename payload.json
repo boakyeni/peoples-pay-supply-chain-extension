@@ -19,20 +19,44 @@
         "name": "Business Registration",
         "data": ""
     },
-    : {
+    {
         "account_type": "bank",
         "account_issuer_name": "GUARANTY TRUST BANK",
         "account_issuer": "300322",
         "account_name": "Test Merchant Trade Name",
         "account_number": "2241012721590"
-    },
-    {
-        "products": [
-            {
-                "product_id": "9423b0ff-6c1d-4f07-ab04-cb83156afff7",
-                "quantity": 2
-            }
-        ],
-        "customerId": "5",
-        "merchantId": "10"
     }
+}
+
+    {
+    "products": [
+        {
+            "product_id": "9423b0ff-6c1d-4f07-ab04-cb83156afff7",
+            "quantity": 2
+        }
+    ],
+    "customerId": "5",
+    "merchantId": "10"
+}
+
+
+    {
+    "amount": "0.10",
+    "account_name": "pay in",
+    "card": {
+        "cvc": "xxx",
+        "expiry": "x/xxxx",
+        "number": "xxxxxxxxxxxxxxxx"
+        ❵,
+        "description": "test card payment",
+        "callbackUrl": "https://peoplespay.com.gh/peoplepay/hub/test",
+        "clientRedirectUrl": "https://peoplespay.com.gh"
+    ❵
+
+    {
+            "amount": "0.5",
+        “account_name”: “pay in”,
+            "account_number": "020XXXXXXX",
+            "account_issuer": "vodafone",
+        “description":"test payment","callbackUrl": "https://peoplespay.com.gh/peoplepay/hub/test"
+        ❵
