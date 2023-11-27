@@ -1,0 +1,22 @@
+static public function issueRM($inv_code, $restrictNoMonths){
+        $myBranch   = $_SESSION['branch_name'];
+
+        $stmt   = Connection::connect()->prepare("SELECT product_storage_tbl.*, inventory_master.*, warehouse.* 
+        FROM product_storage_tbl 
+        INNER JOIN inventory_master ON product_storage_tbl.product_code = inventory_master.inventory_code
+        INNER JOIN warehouse ON product_storage_tbl.wh_stored = warehouse.wh_ID
+        WHERE product_storage_tbl.product_code = :iv
+        AND product_storage_tbl.branch_owner = :mb
+        AND DATE_ADD(CURDATE(), INTERVAL $restrictNoMonths MONTH) < product_storage_tbl.expiry_dt
+        AND product_storage_tbl.recieved_qty > 0 
+        ORDER BY
+        (CASE WHEN product_storage_tbl.expiry_dt > CURDATE() THEN product_storage_tbl.expiry_dt END) ASC,
+        (CASE WHEN product_storage_tbl.expiry_dt < CURDATE() THEN product_storage_tbl.storage_ID END)ASC
+        ");
+
+        $stmt->bindParam('iv', $inv_code, PDO::PARAM_STR);
+        $stmt->bindParam('mb', $myBranch, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt;
+    }

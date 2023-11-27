@@ -7,6 +7,8 @@ from django.core.validators import MinValueValidator
 from decimal import Decimal
 from measurement.measures import Volume, Weight
 from django_measurement.models import MeasurementField
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 
@@ -99,6 +101,7 @@ class ProductInventory(models.Model):
         Product,
         blank=True,
         null=True,
+        unique=True,
         related_name="inventory",
         on_delete=models.PROTECT,
     )
@@ -139,6 +142,13 @@ class ProductInventory(models.Model):
         verbose_name=_("date product last updated"),
         help_text=_("format: Y-m-d H:M:S"),
     )
+    reorder_level = models.IntegerField(default=0)
+
+    @property
+    def quantity(self):
+        return sum(
+            batch.quantity_left for batch in self.batches.all() if not batch.deleted
+        )
 
     def __str__(self):
         return self.product.name
@@ -148,20 +158,34 @@ class ProductInventory(models.Model):
         verbose_name_plural = _("Product Inventory")
 
 
-class Customers(models.Model):
-    """
-    Store Customers
-    """
-
-    pass
-
-
 class SalesZone(models.Model):
     """
     Sales Zone
     """
 
-    pass
+    # name_of_area
+    # town
+    # district
+    # regions
+    # ghana_gps
+    name_of_area = models.CharField(max_length=200, blank=True, null=True)
+    town = models.CharField(max_length=200, blank=True, null=True)
+    district = models.CharField(max_length=200, blank=True, null=True)
+    region = models.CharField(max_length=200, blank=True, null=True)
+
+
+class Customer(models.Model):
+    """
+    Store Customers
+    """
+
+    # business_name
+    # zone
+    # gps
+    business_name = models.CharField(max_length=200, default="")
+    zone = models.ForeignKey(
+        SalesZone, blank=True, null=True, on_delete=models.SET_NULL
+    )
 
 
 class Store(models.Model):
@@ -169,17 +193,18 @@ class Store(models.Model):
 
     sale_zones = models.ManyToManyField(SalesZone, blank=True)
     customers = models.ManyToManyField(
-        Customers,
+        Customer,
         blank=True,
     )
 
 
 class Batch(models.Model):
+    deleted = models.BooleanField(default=False)
     batch_number = models.CharField(unique=True, max_length=250, default="n/a")
     product_inventory = models.ForeignKey(
         ProductInventory,
         verbose_name=_("Product"),
-        related_name="batch",
+        related_name="batches",
         blank=True,
         null=True,
         on_delete=models.CASCADE,
@@ -190,14 +215,19 @@ class Batch(models.Model):
         verbose_name=_("inventory stock check date"),
         help_text=_("format: Y-m-d H:M:S, null-true, blank-true"),
     )
-    quantity = models.IntegerField(
+    quantity_remaining = models.IntegerField(
         default=0,
-        verbose_name=_("Quantity of Product in Batch"),
+        verbose_name=_("Quantity Left of Product in Batch"),
         help_text=_("format: required, default-0"),
     )
     quantity_sold = models.IntegerField(
         default=0,
         verbose_name=_("Quantity Sold to Date"),
+        help_text=_("format: required, default-0"),
+    )
+    initial_quantity = models.IntegerField(
+        default=0,
+        verbose_name=_("Initial Quantity of Product in Batch"),
         help_text=_("format: required, default-0"),
     )
     # batch_weight = MeasurementField(
@@ -207,6 +237,21 @@ class Batch(models.Model):
     #     measurement=Volume, blank=True, null=True, verbose_name=_("Total Batch Volume")
     # )
     expiry_date = models.DateField(blank=True, null=True)
+
+    @property
+    def shelf_life_remaining(self):
+        # Calculate the difference between now and the shelf life end date
+        now = timezone.now()
+        if self.expiry_date > now:
+            return (self.expiry_date - now).days
+        return 0  # Past the shelf life
+
+    @property
+    def about_to_expire(self):
+        now = timezone.now()
+        if self.expiry_date - timedelta(days=14) < now:
+            return True
+        return False  # Not about to expire
 
     class Meta:
         verbose_name_plural = _("Batches")
@@ -240,6 +285,36 @@ class BatchStoreThrough(models.Model):
         verbose_name_plural = _("Manufacter->Van")
 
 
+class InventoryScrap(models.Model):
+    reason = models.TextField(verbose_name=_("Reason for Scrap"))
+    van = models.ForeignKey(
+        Store,
+        blank=True,
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="scrap_requests",
+    )
+    date_of_request = models.DateTimeField(auto_now_add=True)
+    batch_number = models.ForeignKey(
+        Batch, blank=True, null=True, on_delete=models.CASCADE
+    )
+    quantity_requested = models.IntegerField(default=0)
+    quantity_approved = models.IntegerField(default=0)
+    cost_per_unit_scrapped = models.DecimalField(
+        max_digits=50, decimal_places=2, default="0.00"
+    )
+
+
+class InventoryTransfer(models.Model):
+    reason = models.TextField(verbose_name=_("Reason for Scrap"))
+    date_of_request = models.DateTimeField(auto_now_add=True)
+    quantity_requested = models.IntegerField(default=0)
+    quantity_approved = models.IntegerField(default=0)
+    cost_per_unit_transfered = models.DecimalField(
+        max_digits=50, decimal_places=2, default="0.00"
+    )
+
+
 class Approval(models.Model):
     class Status(models.TextChoices):
         APPROVED = "APPROVED", _("APPROVED")
@@ -248,6 +323,12 @@ class Approval(models.Model):
 
     approved = models.CharField(
         choices=Status.choices, max_length=20, default=Status.PENDING
+    )
+    scrap = models.ForeignKey(
+        InventoryScrap, blank=True, null=True, on_delete=models.ProtectedError
+    )
+    transfer = models.ForeignKey(
+        InventoryTransfer, blank=True, null=True, on_delete=models.PROTECT
     )
     issued_by = models.CharField(blank=True, null=True, max_length=100)
     reason = models.TextField(blank=True, null=True)
@@ -264,27 +345,14 @@ class Approval(models.Model):
     )
 
 
-class InventoryScrap(models.Model):
-    reason = models.TextField(verbose_name=_("Reason for Scrap"))
-    approval = models.ForeignKey(
-        Approval, blank=True, null=True, on_delete=models.PROTECT
-    )
-    van = models.ForeignKey(
-        Store,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name="scrap_requests",
-    )
-    date_of_request = models.DateTimeField(auto_now_add=True)
-    product = models.ForeignKey(
-        ProductInventory, blank=True, null=True, on_delete=models.CASCADE
-    )
-    # cost_per_unit_scraped =
+"""
+QUESTIONS:
 
+Does transfer from manufacturer to van require approval
 
-class InventoryTransfer(models.Model):
-    reason = models.TextField(verbose_name=_("Reason for Scrap"))
-    approval = models.ForeignKey(
-        Approval, blank=True, null=True, on_delete=models.PROTECT
-    )
+After an approval has been declined or approved should it still be editable
+or should the approver have to make an new approval
+
+Can batches be deleted: do a soft delete
+
+"""

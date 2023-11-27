@@ -5,15 +5,14 @@ import uuid
 
 # Create your models here.
 
+
 class Order(models.Model):
     STATUS = (
-      ('PENDING', 'PENDING'),
-      ("PARTIAL", 'PARTIAL'),
-      ("FULFILLED", 'FULFILLED'),
+        ("PENDING", "PENDING"),
+        ("PARTIAL", "PARTIAL"),
+        ("FULFILLED", "FULFILLED"),
     )
-    CURRENCY = (
-        ("GHC", "GHC ₵"),
-    )
+    CURRENCY = (("GHC", "GHC ₵"),)
 
     placed_by = models.CharField(verbose_name=_("Buyer ID"), max_length=64)
     placed_to = models.CharField(verbose_name=_("Seller ID"), max_length=64)
@@ -24,9 +23,14 @@ class Order(models.Model):
     note = models.TextField(verbose_name=_("Note"), blank=True, null=True)
 
 
-
 class OrderDetail(models.Model):
-    order = models.ForeignKey(Order, related_name="details", on_delete=models.CASCADE, verbose_name=_("Order ID"), default=0)
+    order = models.ForeignKey(
+        Order,
+        related_name="details",
+        on_delete=models.CASCADE,
+        verbose_name=_("Order ID"),
+        default=0,
+    )
     item_code = models.ForeignKey(Product, on_delete=models.CASCADE, default=uuid.uuid4)
     quantity = models.IntegerField(default=0)
     subtotal = models.DecimalField(max_digits=25, decimal_places=2, default=0.00)
@@ -38,4 +42,4 @@ class OrderDetail(models.Model):
 
     @property
     def unit_price(self):
-        return self.item_code.price
+        return self.item_code.inventory.store_price

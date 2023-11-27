@@ -14,4 +14,6 @@ urlpatterns = [
     ),
     path("create-batch/", views.create_batch, name="create_batch"),
     path("edit-product/", views.update_product, name="edit-product"),
+    path("edit-batch/", views.edit_batch, name="edit-batch"),
+    path("request/", views.create_request),
 ]

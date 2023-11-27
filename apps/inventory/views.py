@@ -7,13 +7,15 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status, generics, serializers
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
-from .models import Product, Category, Brand, ProductInventory
+from .models import Product, Category, Brand, ProductInventory, Batch
 from .serializers import (
     ProductSerializer,
     CategorySerializer,
     ProductInventorySerializer,
     BatchSerializer,
     BrandSerializer,
+    InventoryScrapSerializer,
+    InventoryTransferSerializer,
 )
 
 
@@ -86,7 +88,7 @@ class CreateCategory(APIView):
 class SearchProducts(generics.ListAPIView):
     serializer_class = ProductSerializer
     filter_backends = [SearchFilter]
-    search_fields = ["name", "category__name"]
+    search_fields = ["name", "categories__name"]
 
     def get_queryset(self):
         queryset = Product.objects.all()
@@ -156,12 +158,14 @@ def update_product(request):
             )
         data["brand"] = brand_instance.id
 
-    product_serializer = ProductSerializer(instance=product_instance, data=data)
+    product_serializer = ProductSerializer(
+        instance=product_instance, partial=True, data=data
+    )
     product_serializer.is_valid(raise_exception=True)
     product_serializer.save()
 
     inventory_serializer = ProductInventorySerializer(
-        instance=inventory_instance, data=data
+        instance=inventory_instance, partial=True, data=data
     )
     inventory_serializer.is_valid(raise_exception=True)
     inventory_serializer.save()
@@ -186,3 +190,61 @@ def create_batch(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["PATCH"])
+@transaction.atomic
+def edit_batch(request):
+    data = request.data
+    batch_instance = Batch.objects.get(batch_number=data["batch_number"])
+    serializer = BatchSerializer(instance=batch_instance, partial=True, data=data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["DELETE"])
+@transaction.atomic
+def delete_batch(request):
+    """IDK IF THIS SHOULD BE ALLOWED"""
+    data = request.data
+    batch_instance = Batch.objects.get(batch_number=data["batch_number"])
+    if request.method == "DELETE":
+        delete_operation = batch_instance.delete()
+        data = {}
+        if delete_operation:
+            data["succes"] = "Deletion was successful"
+        else:
+            data["failure"] = "Deletion has failed"
+        return Response(data=data)
+
+
+"""REQUESTS"""
+
+
+@api_view(["POST"])
+@transaction.atomic
+def create_request(request):
+    """Approval is made in Pending State upon request"""
+    data = request.data
+    inventory_scrap_serializer = None
+    inventory_transfer_serializer = None
+    if data["type"].lower() == "inventory scrap":
+        product_instance = Product.objects.get(product_id=data["product_id"])
+        inventory_scrap_serializer = InventoryScrapSerializer(data=data)
+        inventory_scrap_serializer.is_valid(raise_exception=True)
+        inventory_scrap_serializer.save()
+    if data["type"].lower() == "inventory transfer":
+        inventory_transfer_serializer = InventoryTransferSerializer(data=data)
+        inventory_transfer_serializer.is_valid(raise_exception=True)
+        inventory_transfer_serializer.save()
+    serializer = inventory_scrap_serializer or inventory_transfer_serializer
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+"""APPROVALS"""
+
+
+@api_view(["POST"])
+def update_approval(request):
+    data = request.data

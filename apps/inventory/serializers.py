@@ -1,5 +1,16 @@
 from rest_framework import serializers
-from .models import Product, ProductInventory, Brand, Store, Batch, Category
+from .models import (
+    Product,
+    ProductInventory,
+    Brand,
+    Store,
+    Batch,
+    Category,
+    SalesZone,
+    Customer,
+    InventoryTransfer,
+    InventoryScrap,
+)
 from measurement.measures import *
 from measurement.utils import guess
 
@@ -85,3 +96,27 @@ class CategorySerializer(serializers.ModelSerializer):
     def get_parent(self, obj):
         if obj.parent:
             return obj.parent.name
+
+
+class SalesZoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesZone
+        fields = "__all__"
+
+
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = "__all__"
+
+
+class InventoryScrapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InventoryScrap
+        fields = "__all__"
+
+
+class InventoryTransferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InventoryTransfer
+        fields = "__all__"

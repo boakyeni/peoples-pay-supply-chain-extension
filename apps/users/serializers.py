@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, viewsets, status
 from phonenumber_field.serializerfields import PhoneNumberField
 
@@ -84,11 +83,11 @@ class FasterUserSerializer(serializers.Serializer):
 #         ]
 
 
-class UpdateUserSerializer(UserCreateSerializer):
-    class Meta(UserCreateSerializer.Meta):
-        model = User
-        # This should not be all but change later
-        fields = "__all__"
+# class UpdateUserSerializer(UserCreateSerializer):
+#     class Meta(UserCreateSerializer.Meta):
+#         model = User
+#         # This should not be all but change later
+#         fields = "__all__"
 
 
 class SignInSerializer(serializers.Serializer):
