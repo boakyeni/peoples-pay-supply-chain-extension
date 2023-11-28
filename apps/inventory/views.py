@@ -62,6 +62,11 @@ class CreateCategory(APIView):
         if "parent" in data:
             try:
                 parent_instance = Category.objects.get(name=data["parent"])
+                serializer = CategorySerializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                category = serializer.save()
+                category.parent = parent_instance
+                category.save()
 
             except Category.DoesNotExist:
                 custom_response_data = {
@@ -73,12 +78,10 @@ class CreateCategory(APIView):
                 return Response(
                     custom_response_data, status=status.HTTP_400_BAD_REQUEST
                 )
-
-        serializer = CategorySerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        category = serializer.save()
-        category.parent = parent_instance
-        category.save()
+        else:
+            serializer = CategorySerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            category = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

@@ -31,6 +31,7 @@ ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS").split(" ")
 CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS").split(" ")
 
+CENTRAL_AUTH_URL = env("CENTRAL_AUTH_URL")
 
 # Application definition
 

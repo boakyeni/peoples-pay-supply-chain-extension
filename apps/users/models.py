@@ -4,7 +4,9 @@ from django.utils.translation import gettext_lazy as _
 from .managers import CustomUserManager
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.exceptions import ValidationError
+
 # Create your models here.
+
 
 class User(AbstractUser):
     """
@@ -12,7 +14,6 @@ class User(AbstractUser):
     Use <user>.my_created_tasks.all() to get all task assigned by this user
     """
 
-    # add type car owner, admin, parking attendant
     username = None
     first_name = models.CharField(verbose_name=_("First Name"), max_length=50)
     last_name = models.CharField(verbose_name=_("Last Name"), max_length=50)
@@ -20,7 +21,7 @@ class User(AbstractUser):
     phone_number = PhoneNumberField(
         verbose_name=_("Phone Number"), max_length=30, default="+18884244444"
     )
-    
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [
         "first_name",

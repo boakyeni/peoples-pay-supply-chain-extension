@@ -33,6 +33,7 @@ setuptools = "^68.2.2"
 django-autoslug = "^1.9.9"
 django-measurement = "^3.2.4"
 requests = "^2.31.0"
+djoser = "^2.2.2"
 
 
 [build-system]

@@ -97,11 +97,10 @@ class Product(models.Model):
 class ProductInventory(models.Model):
     """Master Inventory Table"""
 
-    product = models.ForeignKey(
+    product = models.OneToOneField(
         Product,
         blank=True,
         null=True,
-        unique=True,
         related_name="inventory",
         on_delete=models.PROTECT,
     )

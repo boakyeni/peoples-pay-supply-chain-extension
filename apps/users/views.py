@@ -5,31 +5,44 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 import requests
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
 
-CENTRAL_AUTH_URL = "https://central-auth-service-url.com"
+CENTRAL_AUTH_URL = settings.CENTRAL_AUTH_URL
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login_view(request):
-    email = request.data.get("username")
+    email = request.data.get("email")
     password = request.data.get("password")
 
+    request_data = {
+        "operation": "SIGNIN",
+        "configs": {},
+        "body": {"user": {"email": email, "password": password}},
+    }
     # Send credentials to centralized service
-    response = requests.post(f"{CENTRAL_AUTH_URL}/validate-credentials",
-                             data={"email": email, "password": password})
-    
-    if response.status_code == 200:
+    response = requests.put(
+        f"{CENTRAL_AUTH_URL}/api/v1/gateway/make",
+        json=request_data,
+    )
+    data = response.json()
+    if data["success"]:
         # If valid, issue JWT token
         token = RefreshToken()
-        data = response.json()
-        token["merchant_id"] = data['registrationNumber']
-        token['merchant_name'] = data["merchant_name"]
-        
-        return Response({
-            "refresh": str(token),
-            "access": str(token.access_token),
-        })
-    return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        token["merchant_id"] = data["data"]["merchant"]["_id"]
+        token["merchant_name"] = data["data"]["merchant"]["businessName"]
+
+        return Response(
+            {
+                "refresh": str(token),
+                "access": str(token.access_token),
+            }
+        )
+    return Response(
+        {"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
+    )
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -41,17 +54,19 @@ def signup_view(request):
     }
 
     # Send user data to centralized service for account creation
-    response = requests.post(f"{CENTRAL_AUTH_URL}/create-account", data=user_data)
-    
+    response = requests.put(f"{CENTRAL_AUTH_URL}/api/v1/gateway/make", json=user_data)
+
     if response.status_code == 200:
         # If account creation successful, issue JWT token
         token = RefreshToken()
         data = response.json()
-        token["merchant_id"] = data['registrationNumber']
-        return Response({
-            "refresh": str(token),
-            "access": str(token.access_token),
-        })
-    return Response({"detail": "Account creation failed"}, status=status.HTTP_400_BAD_REQUEST)
-
-
+        token["merchant_id"] = data["registrationNumber"]
+        return Response(
+            {
+                "refresh": str(token),
+                "access": str(token.access_token),
+            }
+        )
+    return Response(
+        {"detail": "Account creation failed"}, status=status.HTTP_400_BAD_REQUEST
+    )
