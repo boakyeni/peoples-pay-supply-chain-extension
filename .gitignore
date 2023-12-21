@@ -3,6 +3,7 @@ migrations/
 
 
 static/
+sqlquery.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
