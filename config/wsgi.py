@@ -14,7 +14,7 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
 import os
 import sys
 
-
+# Define the path to the virtual environment's Python executable directory
 # python_home = 'C:/Apache4Django/htdocs/peoples-pay-supply-chain-extension/venv'
 
 # # Activate the virtual environment
@@ -22,19 +22,13 @@ import sys
 # with open(activate_this, "rb") as file_:
 #     exec(compile(file_.read(), activate_this, 'exec'), dict(__file__=activate_this))
 
+# Set the application specific paths
+sys.path.insert(
+    0,
+    "C:/Apache4Django/htdocs/peoples-pay-supply-chain-extension/venv/Lib/site-packages",
+)
 
-
-"""
-FOR WINDOWS ONLY
-"""
-# sys.path.insert(0, 'C:/Apache4Django/htdocs/peoples-pay-supply-chain-extension/venv/Lib/site-packages')
-
-# sys.path.append('C:/Apache4Django/htdocs/peoples-pay-supply-chain-extension')
-
-"""
-FOR WINDOWS ONLY ^^^ UNCOMMENT ON WINDOWS ^^^^
-"""
-
+sys.path.append("C:/Apache4Django/htdocs/peoples-pay-supply-chain-extension")
 # sys.path.append('C:/Apache4Django/htdocs/peoples-pay-supply-chain-extension/config')
 
 from django.core.wsgi import get_wsgi_application
@@ -42,4 +36,3 @@ from django.core.wsgi import get_wsgi_application
 os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings"
 
 application = get_wsgi_application()
-
