@@ -200,7 +200,7 @@ class Store(models.Model):
 class Batch(models.Model):
     deleted = models.BooleanField(default=False)
     batch_number = models.CharField(unique=True, max_length=250, default="n/a")
-    product_inventory = models.ForeignKey(
+    product = models.ForeignKey(
         ProductInventory,
         verbose_name=_("Product"),
         related_name="batches",
@@ -213,11 +213,6 @@ class Batch(models.Model):
         blank=True,
         verbose_name=_("inventory stock check date"),
         help_text=_("format: Y-m-d H:M:S, null-true, blank-true"),
-    )
-    quantity_remaining = models.IntegerField(
-        default=0,
-        verbose_name=_("Quantity Left of Product in Batch"),
-        help_text=_("format: required, default-0"),
     )
     quantity_sold = models.IntegerField(
         default=0,
@@ -236,6 +231,10 @@ class Batch(models.Model):
     #     measurement=Volume, blank=True, null=True, verbose_name=_("Total Batch Volume")
     # )
     expiry_date = models.DateField(blank=True, null=True)
+
+    @property
+    def quantity_remaining(self):
+        return self.initial_quantity - self.quantity_sold
 
     @property
     def shelf_life_remaining(self):

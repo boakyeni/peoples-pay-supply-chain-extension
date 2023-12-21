@@ -30,6 +30,7 @@ def login_view(request):
     if data["success"]:
         # If valid, issue JWT token
         token = RefreshToken()
+        token["user_id"] = data["data"]["user"]["_id"]
         token["merchant_id"] = data["data"]["merchant"]["_id"]
         token["merchant_name"] = data["data"]["merchant"]["businessName"]
 
@@ -52,15 +53,24 @@ def signup_view(request):
         "password": request.data.get("password"),
         # Add other fields as needed
     }
-
+    merchant_data = {}
+    request_data = {
+        "operation": "SIGNUP",
+        "configs": {},
+        "body": {
+            "user": user_data,
+            "merchant": merchant_data,
+        },
+    }
     # Send user data to centralized service for account creation
     response = requests.put(f"{CENTRAL_AUTH_URL}/api/v1/gateway/make", json=user_data)
-
-    if response.status_code == 200:
+    data = response.json()
+    if data["success"]:
         # If account creation successful, issue JWT token
         token = RefreshToken()
-        data = response.json()
-        token["merchant_id"] = data["registrationNumber"]
+        token["user_id"] = data["data"]["user"]["_id"]
+        token["merchant_id"] = data["data"]["merchant"]["_id"]
+        token["merchant_name"] = data["data"]["merchant"]["businessName"]
         return Response(
             {
                 "refresh": str(token),

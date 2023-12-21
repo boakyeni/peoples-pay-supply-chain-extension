@@ -12,8 +12,10 @@ urlpatterns = [
         views.create_product,
         name="create_product",
     ),
+    path("batch/", views.SearchBatch.as_view(), name="search_batch"),
     path("create-batch/", views.create_batch, name="create_batch"),
     path("edit-product/", views.update_product, name="edit-product"),
     path("edit-batch/", views.edit_batch, name="edit-batch"),
     path("request/", views.create_request),
+    path("create-store/", views.create_store, name="create_store"),
 ]

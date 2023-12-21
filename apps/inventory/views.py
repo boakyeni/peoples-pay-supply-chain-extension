@@ -16,6 +16,7 @@ from .serializers import (
     BrandSerializer,
     InventoryScrapSerializer,
     InventoryTransferSerializer,
+    StoreSerializer,
 )
 
 
@@ -179,16 +180,28 @@ def update_product(request):
 """BATCH VIEWS"""
 
 
+class SearchBatch(generics.ListAPIView):
+    serializer_class = BatchSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ["batch_number", "product__product__name"]
+
+    def get_queryset(self):
+        queryset = Batch.objects.filter(deleted=False)
+        return queryset
+
+
 @api_view(["POST"])
 @transaction.atomic
 def create_batch(request):
     data = request.data
-    product_instance = None
+    product_inventory_instance = None
     try:
-        product_instance = ProductInventory.objects.get(product__name=data["product"])
+        product_inventory_instance = ProductInventory.objects.get(
+            product__name=data["product"]
+        )
     except ProductInventory.DoesNotExist:
         raise serializers.ValidationError("Product does not exist")
-    data["product"] = product_instance.id
+    data["product"] = product_inventory_instance.id
     serializer = BatchSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
@@ -233,7 +246,8 @@ def create_request(request):
     inventory_scrap_serializer = None
     inventory_transfer_serializer = None
     if data["type"].lower() == "inventory scrap":
-        product_instance = Product.objects.get(product_id=data["product_id"])
+        product_instance = Product.objects.get(name=data["product"])
+        data["product"] = product_instance.product_id
         inventory_scrap_serializer = InventoryScrapSerializer(data=data)
         inventory_scrap_serializer.is_valid(raise_exception=True)
         inventory_scrap_serializer.save()
@@ -251,3 +265,12 @@ def create_request(request):
 @api_view(["POST"])
 def update_approval(request):
     data = request.data
+
+
+@api_view(["POST"])
+def create_store(request):
+    data = request.data
+    serializer = StoreSerializer(data=data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_201_CREATED)

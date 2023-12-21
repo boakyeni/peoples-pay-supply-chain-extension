@@ -11,6 +11,7 @@ class Order(models.Model):
         ("PENDING", "PENDING"),
         ("PARTIAL", "PARTIAL"),
         ("FULFILLED", "FULFILLED"),
+        ("CANCELLED", "CANCELLED"),
     )
     CURRENCY = (("GHC", "GHC ₵"),)
 

@@ -81,9 +81,14 @@ class StoreSerializer(serializers.ModelSerializer):
 
 
 class BatchSerializer(serializers.ModelSerializer):
+    quantity_remaining = serializers.SerializerMethodField()
+
     class Meta:
         model = Batch
         fields = "__all__"
+
+    def get_quantity_remaining(self, obj):
+        return obj.quantity_remaining
 
 
 class CategorySerializer(serializers.ModelSerializer):

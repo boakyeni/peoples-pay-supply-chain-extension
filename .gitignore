@@ -1,3 +1,9 @@
+# REMOVE THIS AFTER DROPPING DB, THIS IS ONLY HERE BECAUSE DEV AND PROD MIGRATIONS ARE OUT OF SYNC
+migrations/
+
+
+static/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
