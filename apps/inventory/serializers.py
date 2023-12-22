@@ -10,6 +10,7 @@ from .models import (
     Customer,
     InventoryTransfer,
     InventoryScrap,
+    ContactNumber,
 )
 from measurement.measures import *
 from measurement.utils import guess
@@ -63,9 +64,14 @@ class AddProductToOrderSerializer(serializers.ModelSerializer):
 
 
 class ProductInventorySerializer(serializers.ModelSerializer):
+    batches = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductInventory
         fields = "__all__"
+
+    def get_batches(self, obj):
+        return [{"batch_number": batch.batch_number} for batch in obj.batches.all()]
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -110,9 +116,17 @@ class SalesZoneSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
+    contact_numbers = serializers.SerializerMethodField()
+
     class Meta:
         model = Customer
         fields = "__all__"
+
+    def get_contact_numbers(self, obj):
+        return [
+            {"name": contact.name, "phone_number": str(contact.phone_number)}
+            for contact in obj.contact_numbers.all()
+        ]
 
 
 class InventoryScrapSerializer(serializers.ModelSerializer):
@@ -124,4 +138,10 @@ class InventoryScrapSerializer(serializers.ModelSerializer):
 class InventoryTransferSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryTransfer
+        fields = "__all__"
+
+
+class ContactNumberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactNumber
         fields = "__all__"

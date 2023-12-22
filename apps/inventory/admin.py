@@ -8,6 +8,8 @@ from .models import (
     Batch,
     InventoryScrap,
     Brand,
+    Customer,
+    ContactNumber,
 )
 
 # Register your models here.
@@ -25,3 +27,5 @@ admin.site.register(Store)
 admin.site.register(Batch)
 admin.site.register(InventoryScrap)
 admin.site.register(Brand)
+admin.site.register(ContactNumber)
+admin.site.register(Customer)

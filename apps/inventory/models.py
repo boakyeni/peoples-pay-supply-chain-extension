@@ -9,6 +9,8 @@ from measurement.measures import Volume, Weight
 from django_measurement.models import MeasurementField
 from django.utils import timezone
 from datetime import timedelta
+from phonenumber_field.modelfields import PhoneNumberField
+
 
 # Create your models here.
 
@@ -68,7 +70,7 @@ class Product(models.Model):
         default=uuid.uuid4,
         editable=False,
         unique=True,
-    )
+    )  # Change this
     name = models.CharField(max_length=100)
     categories = TreeManyToManyField(Category, blank=True)
     description = models.TextField(blank=True, null=True)
@@ -167,7 +169,7 @@ class SalesZone(models.Model):
     # district
     # regions
     # ghana_gps
-    name_of_area = models.CharField(max_length=200, blank=True, null=True)
+    name = models.CharField(max_length=200, blank=True, null=True)
     town = models.CharField(max_length=200, blank=True, null=True)
     district = models.CharField(max_length=200, blank=True, null=True)
     region = models.CharField(max_length=200, blank=True, null=True)
@@ -181,10 +183,46 @@ class Customer(models.Model):
     # business_name
     # zone
     # gps
-    business_name = models.CharField(max_length=200, default="")
-    zone = models.ForeignKey(
-        SalesZone, blank=True, null=True, on_delete=models.SET_NULL
+    name = models.CharField(max_length=200, default="")
+    zone = models.ForeignKey(SalesZone, blank=True, null=True, on_delete=models.PROTECT)
+    email = models.EmailField(blank=True, null=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+        verbose_name=_("date customer last created"),
+        help_text=_("format: Y-m-d H:M:S"),
     )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        editable=False,
+        verbose_name=_("date customer last updated"),
+        help_text=_("format: Y-m-d H:M:S"),
+    )
+    deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name if self.name else ""
+
+
+class ContactNumber(models.Model):
+    name = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = PhoneNumberField(
+        verbose_name=_("Phone Number"), max_length=30, default="0555565656"
+    )
+    customer = models.ForeignKey(
+        Customer,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="contact_numbers",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        editable=False,
+        verbose_name=_("date number last updated"),
+        help_text=_("format: Y-m-d H:M:S"),
+    )
+    # Possible add an edited by
 
 
 class Store(models.Model):

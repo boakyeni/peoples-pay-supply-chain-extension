@@ -7,7 +7,16 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status, generics, serializers
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
-from .models import Product, Category, Brand, ProductInventory, Batch
+from .models import (
+    Product,
+    Category,
+    Brand,
+    ProductInventory,
+    Batch,
+    Customer,
+    SalesZone,
+    ContactNumber,
+)
 from .serializers import (
     ProductSerializer,
     CategorySerializer,
@@ -17,6 +26,9 @@ from .serializers import (
     InventoryScrapSerializer,
     InventoryTransferSerializer,
     StoreSerializer,
+    CustomerSerializer,
+    ContactNumberSerializer,
+    SalesZoneSerializer,
 )
 
 
@@ -186,8 +198,10 @@ class SearchBatch(generics.ListAPIView):
     search_fields = ["batch_number", "product__product__name"]
 
     def get_queryset(self):
-        queryset = Batch.objects.filter(deleted=False)
-        return queryset
+        deleted = self.request.query_params.get("deleted")
+        if deleted is None:
+            return Batch.objects.filter(deleted=False)
+        return Batch.objects.all()
 
 
 @api_view(["POST"])
@@ -200,7 +214,14 @@ def create_batch(request):
             product__name=data["product"]
         )
     except ProductInventory.DoesNotExist:
-        raise serializers.ValidationError("Product does not exist")
+        return Response(
+            {
+                "error": "Product does not Exist",
+                "status": "failed",
+                "message": "Product Does Not Exist",
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     data["product"] = product_inventory_instance.id
     serializer = BatchSerializer(data=data)
     serializer.is_valid(raise_exception=True)
@@ -271,6 +292,111 @@ def update_approval(request):
 def create_store(request):
     data = request.data
     serializer = StoreSerializer(data=data)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+"""CUSTOMER VIEWS"""
+
+
+class SearchCustomer(generics.ListAPIView):
+    serializer_class = CustomerSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ["name", "id"]
+
+    def get_queryset(self):
+        deleted = self.request.query_params.get("deleted")
+        if deleted is None:
+            return Customer.objects.filter(deleted=False)
+        return Customer.objects.all()
+
+
+@api_view(["POST"])
+@transaction.atomic
+def create_customer(request):
+    data = request.data
+
+    zone_name = data.pop("zone", None)
+    zone_object = SalesZone.objects.filter(name=zone_name)
+    zone = zone_object[0] if len(zone_object) > 0 else None
+    data["zone"] = zone.id if zone else None
+
+    customer_serializer = CustomerSerializer(data=data)
+    customer_serializer.is_valid(raise_exception=True)
+    customer_instance = customer_serializer.save()
+
+    if "contact_numbers" in data:
+        for contact in data["contact_numbers"]:
+            contact["customer"] = customer_instance.id
+            print(contact)
+            contact_serializer = ContactNumberSerializer(data=contact)
+            contact_serializer.is_valid(raise_exception=True)
+            contact_serializer.save()
+
+    return Response(customer_serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["PATCH"])
+@transaction.atomic
+def update_customer(request):
+    data = request.data
+
+    try:
+        customer_instance = Customer.objects.get(id=data["id"])
+    except Customer.DoesNotExist:
+        return Response(
+            {
+                "error": "No customer with that id",
+                "status": "failed",
+                "message": "No customer with that id",
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    # handle updating of Foreign Keys
+    zone_name = data.pop("zone", None)
+    zone_object = SalesZone.objects.filter(name=zone_name)
+    zone = zone_object[0] if len(zone_object) > 0 else None
+    data["zone"] = zone.id if zone else None
+
+    contact_data = data.pop("contact_numbers", None)
+    for contact in contact_data:
+        contact_instance_set = ContactNumber.objects.filter(
+            name=contact["name"], customer=customer_instance.id
+        )
+        if len(contact_instance_set) > 0:
+            contact_instance_set[0].phone_number = contact["phone_number"]
+            contact_instance_set[0].save()
+        else:
+            contact["customer"] = customer_instance.id
+            contact_serializer = ContactNumberSerializer(data=contact)
+            contact_serializer.is_valid(raise_exception=True)
+            contact_serializer.save()
+
+    serializer = CustomerSerializer(instance=customer_instance, data=data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+"""ZONE VIEWS"""
+
+
+class SearchZones(generics.ListAPIView):
+    serializer_class = SalesZoneSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ["name", "town", "district", "region"]
+
+    def get_queryset(self):
+        return SalesZone.objects.all()
+
+
+@api_view(["POST"])
+@transaction.atomic
+def create_zone(request):
+    data = request.data
+    serializer = SalesZoneSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)

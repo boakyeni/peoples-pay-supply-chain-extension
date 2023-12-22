@@ -18,4 +18,9 @@ urlpatterns = [
     path("edit-batch/", views.edit_batch, name="edit-batch"),
     path("request/", views.create_request),
     path("create-store/", views.create_store, name="create_store"),
+    path("create-customer/", views.create_customer, name="create_customer"),
+    path("update-customer/", views.update_customer, name="update_customer"),
+    path("customers/", views.SearchCustomer.as_view(), name="search_customer"),
+    path("zones/", views.SearchZones.as_view(), name="search_zones"),
+    path("create-zone/", views.create_zone, name="create_zone"),
 ]
