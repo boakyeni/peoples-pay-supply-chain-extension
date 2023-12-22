@@ -64,7 +64,7 @@ def update_order(request):
     if "add_products" in data:
         products = data["add_products"]
         for product in products:
-            product_instance = Product.objects.get(product_id=product["product_id"])
+            product_instance = Product.objects.get(id=product["product_id"])
             if product_instance not in product_set:
                 order_detail_instance = OrderDetail.objects.create(
                     order=order_instance,

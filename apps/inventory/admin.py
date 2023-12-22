@@ -16,7 +16,7 @@ from .models import (
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ["product_id", "name", "sku"]
+    list_display = ["id", "name", "sku"]
 
 
 admin.site.register(Product, ProductAdmin)

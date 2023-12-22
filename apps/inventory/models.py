@@ -64,13 +64,6 @@ class Brand(models.Model):
 
 
 class Product(models.Model):
-    product_id = models.UUIDField(
-        verbose_name=_("Internal ID of Product"),
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-        unique=True,
-    )  # Change this
     name = models.CharField(max_length=100)
     categories = TreeManyToManyField(Category, blank=True)
     description = models.TextField(blank=True, null=True)

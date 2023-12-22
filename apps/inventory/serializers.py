@@ -56,11 +56,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class AddProductToOrderSerializer(serializers.ModelSerializer):
-    product_id = serializers.UUIDField(read_only=True)
-
     class Meta:
         model = Product
-        fields = ("product_id",)
+        fields = ("id",)
 
 
 class ProductInventorySerializer(serializers.ModelSerializer):

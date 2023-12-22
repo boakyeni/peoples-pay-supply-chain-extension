@@ -127,7 +127,7 @@ def create_product(request):
     product_serializer.is_valid(raise_exception=True)
     product_instance = product_serializer.save()
 
-    data["product"] = product_instance.product_id
+    data["product"] = product_instance.id
 
     brand = data["brand"]
     brand_instance = None
@@ -153,7 +153,7 @@ def create_product(request):
 def update_product(request):
     """Categories and Brands must already exist in the system"""
     data = request.data
-    product_instance = Product.objects.get(product_id=data["product_id"])
+    product_instance = Product.objects.get(id=data["product_id"])
     inventory_instance = ProductInventory.objects.get(product=data["product_id"])
     if "add_categories" in data:
         categories = data["add_categories"]
@@ -268,7 +268,7 @@ def create_request(request):
     inventory_transfer_serializer = None
     if data["type"].lower() == "inventory scrap":
         product_instance = Product.objects.get(name=data["product"])
-        data["product"] = product_instance.product_id
+        data["product"] = product_instance.id
         inventory_scrap_serializer = InventoryScrapSerializer(data=data)
         inventory_scrap_serializer.is_valid(raise_exception=True)
         inventory_scrap_serializer.save()
