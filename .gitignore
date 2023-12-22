@@ -1,7 +1,4 @@
-# REMOVE THIS AFTER DROPPING DB, THIS IS ONLY HERE BECAUSE DEV AND PROD MIGRATIONS ARE OUT OF SYNC
-migrations/
-
-
+# Specific to this Project
 static/
 sqlquery.txt
 
